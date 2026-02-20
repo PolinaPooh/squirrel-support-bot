@@ -5,6 +5,35 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.types import FSInputFile
 
+# ===== ВЕБ-СЕРВЕР ДЛЯ RENDER (чтобы не ругался на порты) =====
+from aiohttp import web
+import threading
+
+async def handle(request):
+    return web.Response(text="Белочка-утешительница работает! 🐿️")
+
+async def run_web_server():
+    app = web.Application()
+    app.router.add_get('/', handle)
+    # Render сам передаёт порт в переменной окружения PORT
+    port = int(os.environ.get('PORT', 10000))
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', port)
+    await site.start()
+    print(f"✅ Веб-сервер запущен на порту {port}")
+
+def start_web_server():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(run_web_server())
+    loop.run_forever()
+
+# Запускаем веб-сервер в отдельном потоке, чтобы не мешал боту
+threading.Thread(target=start_web_server, daemon=True).start()
+print("🚀 Запускаем веб-сервер для Render...")
+# ===== КОНЕЦ БЛОКА =====
+
 # ===== ТВОЙ ТОКЕН =====
 # Вставь сюда токен, который дал BotFather
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
